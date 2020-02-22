@@ -1,10 +1,29 @@
 import React, { Component } from "react";
 import * as $ from "jquery";
-import { authEndpoint, clientId, redirectUri, scopes } from "./config";
-import hash from "./hash";
+//import hash from "./hash";
 import Player from "./Player";
-import logo from "./logo.svg";
 import "./App.css";
+
+export const authEndpoint = 'https://accounts.spotify.com/authorize';
+// Replace with your app's client ID, redirect URI and desired scopes
+const clientId = "36b862dd37654a75a30667cc5317f766";
+const redirectUri = "http://localhost:3000/";
+const scopes = [
+  "user-read-currently-playing",
+  "user-read-playback-state",
+];
+// Get the hash of the url
+const hash = window.location.hash
+  .substring(1)
+  .split("&")
+  .reduce(function(initial, item) {
+    if (item) {
+      var parts = item.split("=");
+      initial[parts[0]] = decodeURIComponent(parts[1]);
+    }
+    return initial;
+  }, {});
+window.location.hash = "";
 
 class App extends Component {
   constructor() {
@@ -22,35 +41,44 @@ class App extends Component {
       is_playing: "Paused",
       progress_ms: 0
     };
-    this.getCurrentlyPlaying = this.getCurrentlyPlaying.bind(this);
+    this.componentDidMount()
+    this.getCurrentlyPlaying = this.getCurrentlyPlaying.bind(this.state);
+    
   }
   componentDidMount() {
     // Set token
+    
     let _token = hash.access_token;
-
     if (_token) {
       // Set token
       this.setState({
         token: _token
       });
-      this.getCurrentlyPlaying(_token);
     }
   }
 
   getCurrentlyPlaying(token) {
     // Make a call using the token
     $.ajax({
-      url: "https://api.spotify.com/v1/me/player",
+      url: "https://api.spotify.com/v1/me/player/currently-playing",
       type: "GET",
       beforeSend: xhr => {
-        xhr.setRequestHeader("Authorization", "Bearer " + token);
+        xhr.setRequestHeader("Authorization", "Bearer " + hash.access_token);
       },
-      success: data => {
-        this.setState({
-          item: data.item,
-          is_playing: data.is_playing,
-          progress_ms: data.progress_ms
-        });
+      success: function(xhr, data) {
+        console.log(xhr.status);
+        if (xhr.status === 200){
+          console.log(data)
+          this.setState({
+            item: data.item,
+            is_playing: data.is_playing,
+            progress_ms: data.progress_ms
+          });
+        }
+      },
+      error: function (xhr, ajaxOptions, thrownError) {
+        console.log(xhr.status);
+        console.log(thrownError);
       }
     });
   }
@@ -59,7 +87,6 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           {!this.state.token && (
             <a
               className="btn btn--loginApp-link"
@@ -70,7 +97,10 @@ class App extends Component {
               Login to Spotify
             </a>
           )}
-          {this.state.token && (
+          {
+          this.getCurrentlyPlaying(this.state)}
+          {
+          this.state.token && (
             <Player
               item={this.state.item}
               is_playing={this.state.is_playing}
