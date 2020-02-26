@@ -30,6 +30,7 @@ class App extends Component {
     super();
     this.state = {
       token: null,
+      some: '' ,
       item: {
         album: {
           images: [{ url: "" }]
@@ -40,44 +41,47 @@ class App extends Component {
       },
       is_playing: "Paused",
       progress_ms: 0
-    };
-    this.componentDidMount()
-    this.getCurrentlyPlaying = this.getCurrentlyPlaying.bind(this.state);
-    
+    }
+    this.componentDidMount = this.componentDidMount.bind(this)
+    this.getCurrentlyPlaying = this.getCurrentlyPlaying.bind(this)
   }
   componentDidMount() {
     // Set token
-    
     let _token = hash.access_token;
     if (_token) {
       // Set token
       this.setState({
-        token: _token
+        token: _token,
+        some: 'new state'
       });
     }
   }
 
   getCurrentlyPlaying(token) {
     // Make a call using the token
+    console.log(token)
+    var that = this;
     $.ajax({
       url: "https://api.spotify.com/v1/me/player/currently-playing",
       type: "GET",
       beforeSend: xhr => {
-        xhr.setRequestHeader("Authorization", "Bearer " + hash.access_token);
+        xhr.setRequestHeader("Authorization", "Bearer " + token);
       },
-      success: function(xhr, data) {
-        console.log(xhr.status);
-        if (xhr.status === 200){
+      success: (data,status, xhr) =>{
+        
+        if ( xhr.status === 200){
           console.log(data)
-          this.setState({
+          console.log(this.state)
+          that.setState({
             item: data.item,
             is_playing: data.is_playing,
-            progress_ms: data.progress_ms
+            progress_ms: data.progress_ms 
           });
         }
+        console.log(this.state)
       },
       error: function (xhr, ajaxOptions, thrownError) {
-        console.log(xhr.status);
+        console.log(xhr.status)
         console.log(thrownError);
       }
     });
@@ -97,8 +101,7 @@ class App extends Component {
               Login to Spotify
             </a>
           )}
-          {
-          this.getCurrentlyPlaying(this.state)}
+          {this.getCurrentlyPlaying(this.state.token)}
           {
           this.state.token && (
             <Player
@@ -106,7 +109,8 @@ class App extends Component {
               is_playing={this.state.is_playing}
               progress_ms={this.progress_ms}
             />
-          )}
+          )
+          }
         </header>
       </div>
     );
