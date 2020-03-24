@@ -1,29 +1,9 @@
 import React, { Component } from "react";
 import * as $ from "jquery";
-//import hash from "./hash";
+import { authEndpoint, clientId, redirectUri, scopes } from "./config";
+import hash from "./hash";
 import Player from "./Player";
 import "./App.css";
-
-export const authEndpoint = 'https://accounts.spotify.com/authorize';
-// Replace with your app's client ID, redirect URI and desired scopes
-const clientId = "36b862dd37654a75a30667cc5317f766";
-const redirectUri = "http://localhost:3000/";
-const scopes = [
-  "user-read-currently-playing",
-  "user-read-playback-state",
-];
-// Get the hash of the url
-const hash = window.location.hash
-  .substring(1)
-  .split("&")
-  .reduce(function(initial, item) {
-    if (item) {
-      var parts = item.split("=");
-      initial[parts[0]] = decodeURIComponent(parts[1]);
-    }
-    return initial;
-  }, {});
-window.location.hash = "";
 
 class App extends Component {
   constructor() {
@@ -86,7 +66,7 @@ class App extends Component {
       }
     });
   }
-
+  
   render() {
     return (
       <div className="App">
@@ -101,7 +81,7 @@ class App extends Component {
               Login to Spotify
             </a>
           )}
-          {this.getCurrentlyPlaying(this.state.token)}
+          {}
           {
           this.state.token && (
             <Player
